@@ -620,6 +620,14 @@
                 </select>
             </div>
 
+            <div class="input-group">
+                <label>High Temperature</label>
+                <select id="highTemperature">
+                    <option>No</option>
+                    <option>Yes</option>
+                </select>
+            </div>
+
             <div class="section-title">Medical History</div>
 
             <div class="input-group">
@@ -905,6 +913,7 @@
 
         function buildPayload() {
             const fever = getValue("fever");
+            const highTemp = getValue("highTemperature");
 
             return {
                 name: getValue("name"),
@@ -918,8 +927,8 @@
                 cold_sore_throat: getValue("cold"),
                 weakness: getValue("fatigue"),
                 breathing_difficulty: getValue("breathing"),
-                high_temperature: fever,
-                temperature_f: fever === "Yes" ? 101.0 : 98.6,
+                high_temperature: highTemp,
+                temperature_f: highTemp === "Yes" ? 101.0 : 98.6,
                 chest_pain: getValue("chest"),
                 loss_smell_taste: getValue("smell"),
                 diabetes: getValue("diabetes"),
@@ -1018,20 +1027,14 @@
             const reportLinks = data.record_id ? `
                 <a class="download-btn" href="${downloadUrl(data.record_id)}">Download Word Report</a>
                 <a class="download-btn" href="${reportUrl(data.record_id)}" target="_blank">Save as PDF</a>
-            ` : "";
+            ` : `<small style="color: #f59e0b">⚠️ Start Flask server to save and export reports</small>`;
 
             resultBox.style.display = "block";
             resultBox.className = "result-box " + className;
             resultBox.innerHTML = `
                 <h1>${risk}</h1>
-                <br>
                 <h3>Risk Probability: ${probability}</h3>
-                <br>
                 <p>${data.recommendation}</p>
-                ${notice ? `<br><small>${notice}</small>` : ""}
-                <br>
-                <small>Model prediction class: ${data.prediction}</small>
-                <br><br>
                 ${reportLinks}
             `;
 
