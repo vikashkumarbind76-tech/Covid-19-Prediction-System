@@ -470,7 +470,7 @@
             font-size: 14px;
         }
 
-        @media(max-width:1100px) {
+        @media (max-width:1100px) {
 
             .container {
                 grid-template-columns: 1fr;
@@ -478,6 +478,10 @@
 
             .dashboard {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .sidebar {
+                position: static;
             }
         }
 
@@ -497,7 +501,31 @@
             }
 
             body {
-                padding: 18px;
+                padding: 12px;
+            }
+
+            .glass {
+                padding: 15px;
+            }
+
+            .input-group {
+                margin-bottom: 12px;
+            }
+
+            .input-group label {
+                margin-bottom: 5px;
+                font-size: 13px;
+            }
+
+            .input-group input,
+            .input-group select {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .predict-btn {
+                padding: 12px;
+                font-size: 15px;
             }
 
             .meter-head {

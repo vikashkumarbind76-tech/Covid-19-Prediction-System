@@ -3,13 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COVID Risk Report</title>
     <style>
         body {
             color: #111827;
             font-family: Arial, sans-serif;
             line-height: 1.5;
-            margin: 36px;
+            margin: 20px;
+            background-color: #f8fafc;
         }
 
         .top {
@@ -20,14 +22,14 @@
 
         h1 {
             color: #0f766e;
-            font-size: 28px;
+            font-size: 24px;
             margin: 0 0 6px;
         }
 
         h2 {
             color: #0f766e;
             font-size: 18px;
-            margin: 24px 0 10px;
+            margin: 20px 0 10px;
         }
 
         .risk-box {
@@ -36,23 +38,26 @@
             border-left: 7px solid #0f766e;
             margin: 18px 0;
             padding: 16px;
+            border-radius: 8px;
         }
 
         .risk {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
         }
 
         table {
             border-collapse: collapse;
             width: 100%;
+            margin-bottom: 16px;
         }
 
         th,
         td {
             border: 1px solid #d1d5db;
-            padding: 9px;
+            padding: 8px;
             text-align: left;
+            font-size: 14px;
         }
 
         th {
@@ -65,10 +70,14 @@
             border: 1px solid #fde68a;
             margin-top: 24px;
             padding: 12px;
+            border-radius: 8px;
         }
 
         .actions {
             margin-bottom: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .btn {
@@ -79,6 +88,7 @@
             margin-right: 8px;
             padding: 10px 14px;
             text-decoration: none;
+            font-size: 14px;
         }
 
         @media print {
