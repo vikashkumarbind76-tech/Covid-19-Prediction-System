@@ -10,8 +10,16 @@ import pandas as pd
 from flask import Flask, Response, jsonify, redirect, render_template, request, session, url_for
 
 
-MODEL_PATH = "covid19Model.pkl"
-DB_PATH = "predictions.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(BASE_DIR)
+
+# For Vercel serverless functions, use /tmp for writable files like SQLite database
+if os.getenv("VERCEL"):
+    DB_PATH = "/tmp/predictions.db"
+else:
+    DB_PATH = os.path.join(ROOT_DIR, "predictions.db")
+
+MODEL_PATH = os.path.join(ROOT_DIR, "covid19Model.pkl")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Vikash09")
 
 AGE_MEAN = 41.794102472403026
@@ -46,7 +54,7 @@ PREDICTION_COLUMNS = {
     "recommendation": "TEXT NOT NULL DEFAULT ''",
 }
 
-app = Flask(__name__, template_folder=".")
+app = Flask(__name__, template_folder=ROOT_DIR)
 app.secret_key = os.environ.get("SECRET_KEY", "covid-risk-local-secret")
 
 
