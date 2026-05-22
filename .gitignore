@@ -41,3 +41,11 @@ __pycache__/
 .vibe/
 .kilo/
 .playwright-mcp/
+
+# Large Training Data (not needed at runtime)
+Covid_data.csv
+*.ipynb_checkpoints/
+
+# Local SQLite databases
+predictions.db
+covid_health.db
