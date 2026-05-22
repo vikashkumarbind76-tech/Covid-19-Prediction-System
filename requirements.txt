@@ -1,3 +1,4 @@
+# Flask API dependencies (Vercel / Render / Railway / Docker-Flask)
 flask
 gunicorn
 pandas
@@ -5,6 +6,4 @@ numpy
 scikit-learn
 werkzeug
 matplotlib
-streamlit
-plotly
 psycopg2-binary
