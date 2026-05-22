@@ -1,16 +1,21 @@
 from functools import lru_cache
 import csv, os, io, sqlite3, hashlib, base64
 from datetime import datetime
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 from flask import (
     Flask, Response, jsonify, redirect,
     render_template, request, session, url_for
 )
+
+# matplotlib is imported lazily (only when dashboard charts are generated)
+# to avoid Vercel cold-start crashes from display/font init
+def _get_matplotlib():
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import matplotlib.patches as mpatches
+    return plt, mpatches
 
 BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR  = os.path.dirname(BASE_DIR)
@@ -193,55 +198,108 @@ def get_db():
     """Return a database connection — Supabase (PostgreSQL) or SQLite."""
     if USE_POSTGRES:
         return _PgConnection(DATABASE_URL)
+    # Ensure the directory for the DB file exists (needed on Vercel /tmp)
+    db_dir = os.path.dirname(DB_PATH)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
-def init_db():
-    with get_db() as conn:
-        conn.executescript("""
-        CREATE TABLE IF NOT EXISTS users (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            full_name   TEXT    NOT NULL DEFAULT '',
-            username    TEXT    NOT NULL UNIQUE,
-            email       TEXT    NOT NULL DEFAULT '',
-            password    TEXT    NOT NULL,
-            age         INTEGER NOT NULL DEFAULT 25,
-            gender      TEXT    NOT NULL DEFAULT 'Male',
-            created_at  TEXT    NOT NULL
-        );
+class _SqliteCtx:
+    """Context manager wrapper for sqlite3 connection so 'with get_db()' works correctly."""
+    def __init__(self, conn):
+        self._conn = conn
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is None:
+            self._conn.commit()
+        else:
+            self._conn.rollback()
+        self._conn.close()
+        return False
 
-        CREATE TABLE IF NOT EXISTS predictions (
-            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id             INTEGER,
-            created_at          TEXT    NOT NULL,
-            name                TEXT    NOT NULL DEFAULT '',
-            phone               TEXT    NOT NULL DEFAULT '',
-            email               TEXT    NOT NULL DEFAULT '',
-            address             TEXT    NOT NULL DEFAULT '',
-            age                 INTEGER NOT NULL DEFAULT 35,
-            gender              TEXT    NOT NULL DEFAULT 'Male',
-            fever               TEXT    NOT NULL DEFAULT 'No',
-            cough               TEXT    NOT NULL DEFAULT 'No',
-            cold_sore_throat    TEXT    NOT NULL DEFAULT 'No',
-            weakness            TEXT    NOT NULL DEFAULT 'No',
-            breathing_difficulty TEXT   NOT NULL DEFAULT 'No',
-            high_temperature    TEXT    NOT NULL DEFAULT 'No',
-            temperature_f       REAL    NOT NULL DEFAULT 98.6,
-            chest_pain          TEXT    NOT NULL DEFAULT 'No',
-            loss_smell_taste    TEXT    NOT NULL DEFAULT 'No',
-            diabetes            TEXT    NOT NULL DEFAULT 'No',
-            asthma              TEXT    NOT NULL DEFAULT 'No',
-            smoke               TEXT    NOT NULL DEFAULT 'No',
-            high_blood_pressure TEXT    NOT NULL DEFAULT 'No',
-            heart_disease       TEXT    NOT NULL DEFAULT 'No',
-            risk_label          TEXT    NOT NULL DEFAULT 'Low Risk',
-            risk_probability    REAL    NOT NULL DEFAULT 0,
-            prediction          INTEGER NOT NULL DEFAULT 0,
-            recommendation      TEXT    NOT NULL DEFAULT '',
-            fallback            INTEGER NOT NULL DEFAULT 0
-        );
-        """)
+def get_db_ctx():
+    """Return a context-manager-safe DB connection."""
+    if USE_POSTGRES:
+        return _PgConnection(DATABASE_URL)
+    return _SqliteCtx(sqlite3.connect(DB_PATH) if True else None)
+
+def _make_sqlite_ctx():
+    db_dir = os.path.dirname(DB_PATH)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return _SqliteCtx(conn)
+
+_DB_SCHEMA = """
+CREATE TABLE IF NOT EXISTS users (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name   TEXT    NOT NULL DEFAULT '',
+    username    TEXT    NOT NULL UNIQUE,
+    email       TEXT    NOT NULL DEFAULT '',
+    password    TEXT    NOT NULL,
+    age         INTEGER NOT NULL DEFAULT 25,
+    gender      TEXT    NOT NULL DEFAULT 'Male',
+    created_at  TEXT    NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS predictions (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id             INTEGER,
+    created_at          TEXT    NOT NULL,
+    name                TEXT    NOT NULL DEFAULT '',
+    phone               TEXT    NOT NULL DEFAULT '',
+    email               TEXT    NOT NULL DEFAULT '',
+    address             TEXT    NOT NULL DEFAULT '',
+    age                 INTEGER NOT NULL DEFAULT 35,
+    gender              TEXT    NOT NULL DEFAULT 'Male',
+    fever               TEXT    NOT NULL DEFAULT 'No',
+    cough               TEXT    NOT NULL DEFAULT 'No',
+    cold_sore_throat    TEXT    NOT NULL DEFAULT 'No',
+    weakness            TEXT    NOT NULL DEFAULT 'No',
+    breathing_difficulty TEXT   NOT NULL DEFAULT 'No',
+    high_temperature    TEXT    NOT NULL DEFAULT 'No',
+    temperature_f       REAL    NOT NULL DEFAULT 98.6,
+    chest_pain          TEXT    NOT NULL DEFAULT 'No',
+    loss_smell_taste    TEXT    NOT NULL DEFAULT 'No',
+    diabetes            TEXT    NOT NULL DEFAULT 'No',
+    asthma              TEXT    NOT NULL DEFAULT 'No',
+    smoke               TEXT    NOT NULL DEFAULT 'No',
+    high_blood_pressure TEXT    NOT NULL DEFAULT 'No',
+    heart_disease       TEXT    NOT NULL DEFAULT 'No',
+    risk_label          TEXT    NOT NULL DEFAULT 'Low Risk',
+    risk_probability    REAL    NOT NULL DEFAULT 0,
+    prediction          INTEGER NOT NULL DEFAULT 0,
+    recommendation      TEXT    NOT NULL DEFAULT '',
+    fallback            INTEGER NOT NULL DEFAULT 0
+);
+"""
+
+def init_db():
+    """Create tables if they don't exist. Safe to call multiple times."""
+    try:
+        if USE_POSTGRES:
+            with _PgConnection(DATABASE_URL) as conn:
+                conn.executescript(_DB_SCHEMA)
+        else:
+            db_dir = os.path.dirname(DB_PATH)
+            if db_dir and not os.path.exists(db_dir):
+                os.makedirs(db_dir, exist_ok=True)
+            conn = sqlite3.connect(DB_PATH)
+            conn.row_factory = sqlite3.Row
+            conn.executescript(_DB_SCHEMA)
+            conn.commit()
+            conn.close()
+    except Exception as _e:
+        # Log but don't crash — app can still serve requests even if DB init
+        # fails transiently (e.g., Vercel cold start race condition)
+        import sys
+        print(f"[init_db] WARNING: {_e}", file=sys.stderr)
 
 init_db()
 
@@ -580,6 +638,7 @@ def logout():
 
 def _fig_to_b64(fig):
     """Convert a matplotlib figure to a base64-encoded PNG string."""
+    plt, _ = _get_matplotlib()
     buf = io.BytesIO()
     fig.savefig(buf, format='png', bbox_inches='tight', dpi=110,
                 facecolor='#0B0F10', edgecolor='none')
@@ -599,6 +658,7 @@ def _dark_style(ax):
 
 def generate_dashboard_graphs(records):
     """Generate matplotlib charts for customer dashboard. Returns dict of b64 strings."""
+    plt, mpatches = _get_matplotlib()
     graphs = {}
     if not records:
         fig, ax = plt.subplots(figsize=(7, 3))
