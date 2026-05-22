@@ -1,5 +1,5 @@
 from functools import lru_cache
-import csv, os, io, sqlite3, base64
+import csv, os, io, sqlite3, hashlib, base64
 from datetime import datetime
 import matplotlib
 matplotlib.use('Agg')
@@ -11,7 +11,6 @@ from flask import (
     Flask, Response, jsonify, redirect,
     render_template, request, session, url_for
 )
-from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR  = os.path.dirname(BASE_DIR)
@@ -31,13 +30,8 @@ if USE_POSTGRES:
 DB_PATH    = os.environ.get("DB_PATH", "/tmp/predictions.db" if os.getenv("VERCEL") else os.path.join(ROOT_DIR, "predictions.db"))
 MODEL_PATH = os.path.join(ROOT_DIR, "covid19Model.pkl")
 
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
-if not ADMIN_PASSWORD:
-    raise RuntimeError("ADMIN_PASSWORD environment variable is not set. Set it before starting the app.")
-
-SECRET_KEY = os.environ.get("SECRET_KEY")
-if not SECRET_KEY:
-    raise RuntimeError("SECRET_KEY environment variable is not set. Set it before starting the app.")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Vikash09")
+SECRET_KEY     = os.environ.get("SECRET_KEY",     "covid19-prediction-secret")
 
 AGE_MEAN = 41.794102472403026
 AGE_STD  = 16.907381137350168
@@ -256,20 +250,7 @@ init_db()
 # AUTH HELPERS
 # ─────────────────────────────────────────────
 def hash_pw(pw: str) -> str:
-    """Hash a password using werkzeug's PBKDF2-HMAC-SHA256 (salted)."""
-    return generate_password_hash(pw)
-
-def verify_pw(pw: str, hashed: str) -> bool:
-    """Verify a password against a werkzeug hash, with SHA-256 legacy fallback."""
-    # Try werkzeug verification first (new accounts)
-    try:
-        if check_password_hash(hashed, pw):
-            return True
-    except Exception:
-        pass
-    # Legacy fallback: plain SHA-256 (old accounts created before this update)
-    import hashlib
-    return hashlib.sha256(pw.encode()).hexdigest() == hashed
+    return hashlib.sha256(pw.encode()).hexdigest()
 
 def get_user_by_id(uid: int):
     with get_db() as conn:
@@ -575,7 +556,7 @@ def login_page():
         username = str(data.get("username","")).strip()
         password = str(data.get("password","")).strip()
         user = get_user_by_username(username)
-        if user and verify_pw(password, user["password"]):
+        if user and user["password"] == hash_pw(password):
             session["user_id"]  = user["id"]
             session["username"] = user["username"]
             session["is_admin"] = False
@@ -751,13 +732,9 @@ def user_dashboard():
 # ─────────────────────────────────────────────
 # ROUTES — PREDICT
 # ─────────────────────────────────────────────
-# Allowed CORS origin — set CORS_ORIGIN env var to your production domain.
-# Falls back to "*" only in development (when FLASK_ENV=development or not set).
-_CORS_ORIGIN = os.environ.get("CORS_ORIGIN", "*")
-
 @app.after_request
 def cors(response):
-    response.headers["Access-Control-Allow-Origin"]  = _CORS_ORIGIN
+    response.headers["Access-Control-Allow-Origin"]  = "*"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return response

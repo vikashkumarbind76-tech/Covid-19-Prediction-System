@@ -10,11 +10,9 @@ services:
       - "5000:5000"
     environment:
       - PORT=5000
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - SECRET_KEY=${SECRET_KEY}
+      - ADMIN_PASSWORD=Vikash09
+      - SECRET_KEY=covid19-prediction-secret
       - DB_PATH=/app/data/predictions.db
-      - DATABASE_URL=${DATABASE_URL:-}
-      - CORS_ORIGIN=${CORS_ORIGIN:-*}
     volumes:
       - covid_db_volume:/app/data
     restart: always
