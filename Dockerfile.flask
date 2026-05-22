@@ -1,0 +1,23 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies if any are needed (e.g. for matplotlib/numpy build dependencies, though wheels are usually available)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy all project files into container
+COPY . .
+
+# Set up runtime configurations
+ENV PORT=5000
+ENV DB_PATH=/app/predictions.db
+EXPOSE 5000
+
+# Start Flask with Gunicorn, dynamically binding to $PORT (assigned by container or cloud platforms)
+CMD ["sh", "-c", "gunicorn api.app:app --bind 0.0.0.0:${PORT:-5000} --workers 2 --timeout 120"]

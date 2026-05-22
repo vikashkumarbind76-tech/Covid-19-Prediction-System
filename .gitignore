@@ -1,0 +1,43 @@
+# Python Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+ENV/lib/
+ENV/bin/
+venv.bak/
+.venv.bak/
+
+# Python Cache & compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# SQLite Database Files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Local Environment Secret Configs
+.env
+.env.local
+.env.*.local
+
+# IDE configurations
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Testing & Artifact Outputs
+.tempmediaStorage/
+*.png
+.agent/
+.vibe/
+.kilo/
+.playwright-mcp/

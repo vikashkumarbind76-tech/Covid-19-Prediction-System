@@ -1,5 +1,9 @@
+# Flask API dependencies (used by Vercel, Docker/Flask, Render, Railway)
 flask
 gunicorn
 pandas
 numpy
 scikit-learn
+werkzeug
+matplotlib
+psycopg2-binary

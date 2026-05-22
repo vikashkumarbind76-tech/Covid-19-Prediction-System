@@ -1,0 +1,20 @@
+# Exclude large training dataset — not needed by the Flask API
+Covid_data.csv
+
+# Exclude Jupyter notebook
+Covid_19_Prediction_system (1).ipynb
+
+# Exclude local databases — Supabase is used in production
+*.db
+*.db-journal
+
+# Exclude dev/test artifacts
+venv/
+.venv/
+__pycache__/
+.agent/
+.vibe/
+.kilo/
+.playwright-mcp/
+.vscode/
+.git/

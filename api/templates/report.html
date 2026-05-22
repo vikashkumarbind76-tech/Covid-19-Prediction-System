@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COVID Risk Report — COVID-19 Prediction System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050505;
+      --card: rgba(11, 15, 16,0.85);
+      --text: #F8FAFC;
+      --muted: #94a3b8;
+      --neon-green: #00FFC6;
+      --neon-green-glow: rgba(0, 255, 198,0.5);
+      --purple: #7C3AED;
+      --cyan: #06B6D4;
+      --pink: #EC4899;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --shadow: 0 24px 60px rgba(0,0,0,0.7);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Space Grotesk',sans-serif;
+      background:var(--bg);color:var(--text);
+      min-height:100vh;padding:24px;position:relative;overflow-x:hidden;
+    }
+    body::after{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.04;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      background-size:220px 220px;mix-blend-mode:overlay;
+    }
+    .backglow{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+    .blob{position:absolute;border-radius:999px;filter:blur(80px);opacity:0.3;animation:floaty 18s ease-in-out infinite;}
+    .blob.one{width:500px;height:500px;left:-150px;top:-150px;background:radial-gradient(circle,rgba(0, 255, 198,0.4),transparent 60%);}
+    .blob.two{width:400px;height:400px;right:-100px;bottom:-100px;background:radial-gradient(circle,rgba(6,182,212,0.3),transparent 60%);animation-duration:22s;animation-direction:reverse;}
+    @keyframes floaty{0%{transform:translate3d(0,0,0);}50%{transform:translate3d(25px,18px,0);}100%{transform:translate3d(0,0,0);}}
+    .page{position:relative;z-index:1;max-width:900px;margin:0 auto;}
+    /* Action bar */
+    .action-bar{
+      display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;
+    }
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 18px;border-radius:999px;
+      font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+      text-decoration:none;transition:0.25s ease;cursor:pointer;border:0;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--neon-green),var(--cyan));color:#fff;
+      box-shadow:0 0 20px rgba(0, 255, 198,0.35);
+    }
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(0, 255, 198,0.5);}
+    .btn-secondary{
+      background:rgba(0, 255, 198,0.1);border:1px solid rgba(0, 255, 198,0.25);color:var(--text);
+    }
+    .btn-secondary:hover{background:rgba(0, 255, 198,0.18);border-color:rgba(0, 255, 198,0.45);}
+    /* Report header */
+    .report-header{
+      border-radius:var(--radius-xl);padding:28px;margin-bottom:20px;
+      background:var(--card);border:1px solid rgba(0, 255, 198,0.2);
+      backdrop-filter:blur(20px);box-shadow:var(--shadow);
+      position:relative;overflow:hidden;
+    }
+    .report-header::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:3px;
+      background:linear-gradient(90deg,var(--neon-green),var(--cyan),var(--pink));
+    }
+    .report-header-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+    .report-brand{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+    .report-brand .mark{
+      width:44px;height:44px;border-radius:14px;display:grid;place-items:center;
+      background:linear-gradient(135deg,rgba(0, 255, 198,0.3),rgba(6,182,212,0.2));
+      border:1px solid rgba(0, 255, 198,0.35);
+    }
+    .report-brand .mark i{font-size:20px;color:var(--cyan);}
+    .report-brand .brand-text strong{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;display:block;}
+    .report-brand .brand-text strong em{font-style:normal;color:var(--cyan);}
+    .report-brand .brand-text span{font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;}
+    .report-title{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;}
+    .report-meta{color:var(--muted);font-size:13px;font-weight:500;}
+    .report-meta span{margin-right:16px;}
+    .report-meta i{margin-right:5px;color:var(--neon-green);}
+    /* Risk box */
+    .risk-box{
+      border-radius:var(--radius-lg);padding:22px;margin-bottom:20px;
+      backdrop-filter:blur(16px);box-shadow:var(--shadow);
+      position:relative;overflow:hidden;
+    }
+    .risk-box.high{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-left:4px solid #ef4444;}
+    .risk-box.medium{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-left:4px solid #f59e0b;}
+    .risk-box.low{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-left:4px solid #10b981;}
+    .risk-box.high{--risk-color:#ef4444;}
+    .risk-box.medium{--risk-color:#f59e0b;}
+    .risk-box.low{--risk-color:#10b981;}
+    .risk-box-inner{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+    .risk-level-badge{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:10px 18px;border-radius:999px;font-family:'Sora',sans-serif;
+      font-size:15px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;
+    }
+    .risk-level-badge.high{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#f87171;}
+    .risk-level-badge.medium{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#fbbf24;}
+    .risk-level-badge.low{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#34d399;}
+    .risk-level-badge .dot{width:10px;height:10px;border-radius:50%;}
+    .risk-level-badge.high .dot{background:#ef4444;box-shadow:0 0 12px rgba(239,68,68,0.5);}
+    .risk-level-badge.medium .dot{background:#f59e0b;box-shadow:0 0 12px rgba(245,158,11,0.4);}
+    .risk-level-badge.low .dot{background:#10b981;box-shadow:0 0 12px rgba(16,185,129,0.4);}
+    .risk-details-text{flex:1;}
+    .risk-prob{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;line-height:1;}
+    .risk-rec{color:var(--muted);font-size:14px;line-height:1.7;margin-top:6px;}
+    /* Data sections */
+    .data-section{
+      border-radius:var(--radius-xl);margin-bottom:16px;
+      background:var(--card);border:1px solid rgba(0, 255, 198,0.12);
+      backdrop-filter:blur(16px);box-shadow:var(--shadow);overflow:hidden;
+    }
+    .data-section-header{
+      padding:16px 20px;border-bottom:1px solid rgba(0, 255, 198,0.1);
+      display:flex;align-items:center;gap:10px;
+    }
+    .data-section-header .icon{
+      width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-size:14px;
+    }
+    .data-section-header h2{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;}
+    table{border-collapse:collapse;width:100%;}
+    th,td{padding:11px 20px;text-align:left;border-bottom:1px solid rgba(0, 255, 198,0.06);font-size:13px;}
+    th{
+      background:rgba(0, 255, 198,0.06);color:rgba(248,250,252,0.6);
+      font-weight:700;letter-spacing:0.04em;width:35%;
+    }
+    td{color:var(--muted);font-weight:500;}
+    tr:last-child th,tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(0, 255, 198,0.03);color:var(--text);}
+    /* Disclaimer */
+    .disclaimer{
+      border-radius:var(--radius-lg);padding:16px 20px;margin-top:20px;
+      background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);
+      font-size:13px;color:rgba(251,191,36,0.85);line-height:1.7;font-weight:500;
+    }
+    .disclaimer strong{color:#fbbf24;}
+    .scroll-progress{
+      position:fixed;inset:0 auto auto 0;width:0%;height:3px;z-index:50;
+      background:linear-gradient(90deg,var(--neon-green),var(--cyan),var(--purple),var(--pink));
+      box-shadow:0 0 18px rgba(0,255,198,.55);
+    }
+    .cursor-glow{
+      position:fixed;width:360px;height:360px;border-radius:50%;
+      background:radial-gradient(circle,rgba(0,255,198,.11),transparent 68%);
+      pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .14s ease,top .14s ease;
+    }
+    .particle-field{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+    .particle{
+      position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(0,255,198,.72);
+      box-shadow:0 0 14px rgba(0,255,198,.7);animation:particleFloat var(--dur,16s) linear infinite;opacity:.25;
+    }
+    @keyframes particleFloat{
+      0%{transform:translate3d(0,105vh,0);opacity:0;}
+      15%,78%{opacity:var(--alpha,.45);}
+      100%{transform:translate3d(var(--drift,50px),-12vh,0);opacity:0;}
+    }
+    .report-header,.risk-box,.data-section,.disclaimer{
+      isolation:isolate;
+      background:linear-gradient(145deg,rgba(11,15,16,.88),rgba(5,5,5,.74));
+      box-shadow:0 28px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .report-header::after,.risk-box::before,.data-section::before{
+      content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+      background:linear-gradient(135deg,rgba(0,255,198,.45),rgba(6,182,212,.14),rgba(124,58,237,.38));
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;opacity:.7;
+    }
+    .data-section{position:relative;}
+    .report-header{animation:reportReveal .55s ease both;}
+    .risk-box,.data-section,.disclaimer{animation:reportReveal .55s ease both;}
+    .risk-box{animation-delay:.08s;}
+    .data-section:nth-of-type(3){animation-delay:.14s;}
+    .data-section:nth-of-type(4){animation-delay:.2s;}
+    .data-section:nth-of-type(5){animation-delay:.26s;}
+    @keyframes reportReveal{from{opacity:0;transform:translateY(14px);filter:blur(8px);}to{opacity:1;transform:none;filter:blur(0);}}
+    .risk-visual{
+      width:128px;height:128px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+      background:conic-gradient(var(--risk-color) calc(var(--risk-pct) * 1%),rgba(255,255,255,.08) 0);
+      box-shadow:0 0 28px rgba(0,255,198,.14);
+      position:relative;
+    }
+    .risk-visual::before{
+      content:"";position:absolute;inset:12px;border-radius:inherit;background:rgba(5,5,5,.9);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .risk-visual span{position:relative;font-family:'Sora',sans-serif;font-size:26px;font-weight:800;color:var(--risk-color);}
+    .risk-visual small{position:relative;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;}
+    .risk-meter-copy{display:grid;place-items:center;}
+    .data-section-header{background:linear-gradient(90deg,rgba(0,255,198,.06),transparent);}
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
+    }
+    @media print{
+      .action-bar,.cursor-glow,.particle-field,.scroll-progress{display:none;}
+      body{background:#fff;color:#000;padding:16px;}
+      .backglow{display:none;}
+      .report-header,.risk-box,.data-section{background:#fff;border:1px solid #ddd;box-shadow:none;}
+      .report-title,.data-section-header h2{color:#000;}
+      th{background:#f5f5f5;color:#333;}
+      td{color:#555;}
+      .risk-level-badge.high{color:#dc2626;}
+      .risk-level-badge.medium{color:#d97706;}
+      .risk-level-badge.low{color:#059669;}
+    }
+    @media(max-width:600px){
+      body{padding:14px;}
+      .risk-box-inner{flex-direction:column;align-items:flex-start;}
+      .report-header-inner{flex-direction:column;}
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="particle-field" id="particleField" aria-hidden="true"></div>
+  <div class="backglow" aria-hidden="true">
+    <div class="blob one"></div>
+    <div class="blob two"></div>
+  </div>
+  <div class="page">
+    {% if printable is not defined or printable %}
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="window.print()">
+        <i class="fa-solid fa-file-pdf"></i> Save as PDF / Print
+      </button>
+      <a class="btn btn-secondary" href="/download/{{ record.id }}/word">
+        <i class="fa-solid fa-file-word"></i> Download Word
+      </a>
+      <a class="btn btn-secondary" href="/">
+        <i class="fa-solid fa-house-medical"></i> Patient Form
+      </a>
+      <a class="btn btn-secondary" href="/admin">
+        <i class="fa-solid fa-lock"></i> Admin Panel
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Report header -->
+    <div class="report-header">
+      <div class="report-brand">
+        <div class="mark"><i class="fa-solid fa-shield-virus"></i></div>
+        <div class="brand-text">
+          <strong>COVID-19</strong>
+          <span>Prediction System</span>
+        </div>
+      </div>
+      <div class="report-title">COVID-19 Risk Assessment Report</div>
+      <div class="report-meta">
+        <span><i class="fa-solid fa-hashtag"></i>Report ID: {{ record.id }}</span>
+        <span><i class="fa-regular fa-calendar"></i>{{ record.created_at }}</span>
+      </div>
+    </div>
+
+    <!-- Risk result -->
+    {% set rk = record.risk_label|lower %}
+    {% if 'high' in rk %}{% set risk_class = 'high' %}
+    {% elif 'medium' in rk %}{% set risk_class = 'medium' %}
+    {% else %}{% set risk_class = 'low' %}{% endif %}
+
+    <div class="risk-box {{ risk_class }}">
+      <div class="risk-box-inner">
+        <div class="risk-visual" style="--risk-pct: {{ record.risk_probability }};">
+          <div class="risk-meter-copy">
+            <span>{{ record.risk_probability }}%</span>
+            <small>Risk</small>
+          </div>
+        </div>
+        <div class="risk-level-badge {{ risk_class }}">
+          <span class="dot"></span>{{ record.risk_label }}
+        </div>
+        <div class="risk-details-text">
+          <div class="risk-prob">{{ record.risk_probability }}% Risk Probability</div>
+          <div class="risk-rec">{{ record.recommendation }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patient info -->
+    <div class="data-section">
+      <div class="data-section-header">
+        <div class="icon" style="background:rgba(0, 255, 198,0.15);border:1px solid rgba(0, 255, 198,0.25);color:var(--neon-green);">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <h2>Patient Information</h2>
+      </div>
+      <table>
+        <tr><th>Full Name</th><td>{{ record.name }}</td></tr>
+        <tr><th>Phone Number</th><td>{{ record.phone }}</td></tr>
+        <tr><th>Email Address</th><td>{{ record.email }}</td></tr>
+        <tr><th>Address</th><td>{{ record.address }}</td></tr>
+        <tr><th>Age</th><td>{{ record.age }} years</td></tr>
+        <tr><th>Gender</th><td>{{ record.gender }}</td></tr>
+        <tr><th>Body Temperature</th><td>{{ record.temperature_f }}°F</td></tr>
+      </table>
+    </div>
+
+    <!-- Symptoms -->
+    <div class="data-section">
+      <div class="data-section-header">
+        <div class="icon" style="background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.25);color:var(--pink);">
+          <i class="fa-solid fa-stethoscope"></i>
+        </div>
+        <h2>Reported Symptoms</h2>
+      </div>
+      <table>
+        {% for label, value in symptoms %}
+        <tr>
+          <th>{{ label }}</th>
+          <td style="color:{% if value == 'Yes' %}#34d399{% else %}var(--muted){% endif %};font-weight:{% if value == 'Yes' %}700{% else %}500{% endif %};">
+            {% if value == 'Yes' %}<i class="fa-solid fa-circle-check" style="margin-right:6px;"></i>{% else %}<i class="fa-solid fa-circle-xmark" style="margin-right:6px;opacity:0.4;"></i>{% endif %}{{ value }}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- Medical history -->
+    <div class="data-section">
+      <div class="data-section-header">
+        <div class="icon" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.25);color:var(--cyan);">
+          <i class="fa-solid fa-notes-medical"></i>
+        </div>
+        <h2>Medical History</h2>
+      </div>
+      <table>
+        {% for label, value in history %}
+        <tr>
+          <th>{{ label }}</th>
+          <td style="color:{% if value == 'Yes' %}#fbbf24{% else %}var(--muted){% endif %};font-weight:{% if value == 'Yes' %}700{% else %}500{% endif %};">
+            {% if value == 'Yes' %}<i class="fa-solid fa-circle-exclamation" style="margin-right:6px;"></i>{% else %}<i class="fa-solid fa-circle-xmark" style="margin-right:6px;opacity:0.4;"></i>{% endif %}{{ value }}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="disclaimer">
+      <i class="fa-solid fa-triangle-exclamation" style="margin-right:8px;"></i>
+      <strong>Medical Disclaimer:</strong> This screening report is generated by an AI system for educational purposes only and does not constitute a medical diagnosis. Always consult a qualified healthcare professional for medical decisions and treatment.
+    </div>
+  </div>
+  <script>
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const cursorGlow = document.getElementById("cursorGlow");
+    document.addEventListener("mousemove", (event) => {
+      if (!cursorGlow) return;
+      cursorGlow.style.left = event.clientX + "px";
+      cursorGlow.style.top = event.clientY + "px";
+    });
+    const scrollProgress = document.getElementById("scrollProgress");
+    function updateProgress() {
+      if (!scrollProgress) return;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      scrollProgress.style.width = (max > 0 ? clamp((window.scrollY / max) * 100, 0, 100) : 0) + "%";
+    }
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    updateProgress();
+    const particleField = document.getElementById("particleField");
+    if (particleField && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const total = window.innerWidth < 720 ? 22 : 38;
+      for (let i = 0; i < total; i++) {
+        const p = document.createElement("span");
+        p.className = "particle";
+        p.style.left = Math.random() * 100 + "%";
+        p.style.setProperty("--dur", (12 + Math.random() * 14).toFixed(1) + "s");
+        p.style.setProperty("--drift", ((Math.random() - 0.5) * 130).toFixed(0) + "px");
+        p.style.setProperty("--alpha", (0.2 + Math.random() * 0.45).toFixed(2));
+        p.style.animationDelay = (-Math.random() * 18).toFixed(2) + "s";
+        particleField.appendChild(p);
+      }
+    }
+  </script>
+</body>
+</html>

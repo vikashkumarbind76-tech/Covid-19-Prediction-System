@@ -1,0 +1,8 @@
+# Streamlit dashboard dependencies (used by Streamlit Community Cloud, Docker/Streamlit)
+streamlit
+pandas
+numpy
+scikit-learn
+matplotlib
+plotly
+psycopg2-binary

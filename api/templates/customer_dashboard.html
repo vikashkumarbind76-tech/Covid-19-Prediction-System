@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Dashboard — COVID-19 Prediction System</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #050505;
+        --bg2: #0B0F10;
+        --card: rgba(11, 15, 16, 0.82);
+        --text: #F8FAFC;
+        --muted: #94a3b8;
+        --ng: #00FFC6;
+        --cyan: #06B6D4;
+        --purple: #7C3AED;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --success: #10b981;
+        --radius: 22px;
+        --border: rgba(0, 255, 198, 0.18);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Space Grotesk', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 28px 20px;
+      }
+      .top-bar {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+      }
+      .brand {
+        display: flex; align-items: center; gap: 10px;
+      }
+      .brand .mark {
+        width: 38px; height: 38px; border-radius: 12px;
+        display: grid; place-items: center;
+        background: linear-gradient(135deg, rgba(0,255,198,.25), rgba(6,182,212,.15));
+        border: 1px solid rgba(0,255,198,.4);
+        box-shadow: 0 0 18px rgba(0,255,198,.2);
+      }
+      .brand strong {
+        font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700;
+      }
+      .brand strong em { font-style: normal; color: var(--ng); }
+      .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+      .nav-links a {
+        color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 700;
+        padding: 6px 14px; border-radius: 10px; border: 1px solid var(--border);
+        transition: .15s ease;
+      }
+      .nav-links a:hover { color: var(--ng); border-color: rgba(0,255,198,.4); background: rgba(0,255,198,.06); }
+      /* ── Card ── */
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.5);
+        margin-bottom: 20px;
+        backdrop-filter: blur(12px);
+        position: relative;
+      }
+      .card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        border-radius: var(--radius) var(--radius) 0 0;
+        background: linear-gradient(90deg, transparent, var(--ng), var(--cyan), transparent);
+      }
+      .card-title {
+        font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700;
+        margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+      }
+      .card-title i { color: var(--ng); font-size: 14px; }
+      /* ── Profile ── */
+      .profile {
+        display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+      }
+      .avatar {
+        width: 56px; height: 56px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--ng), var(--cyan));
+        display: grid; place-items: center;
+        font-size: 22px; font-weight: 800; color: #000; font-family: 'Sora', sans-serif;
+        box-shadow: 0 0 24px rgba(0,255,198,.3);
+      }
+      .meta { flex: 1; min-width: 150px; }
+      .meta .name { font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+      .meta .sub { color: var(--muted); font-size: 13px; }
+      /* ── Status Pill ── */
+      .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        padding: 5px 13px; border-radius: 50px; font-size: 12px; font-weight: 600;
+        border: 1px solid;
+      }
+      .pill.high   { background: rgba(239,68,68,.1);  border-color: rgba(239,68,68,.3);  color: #fca5a5; }
+      .pill.medium { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); color: #fcd34d; }
+      .pill.low    { background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.3); color: #6ee7b7; }
+      /* ── Stats Row ── */
+      .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+      .stat-card {
+        background: var(--bg2); border: 1px solid var(--border);
+        border-radius: 16px; padding: 16px; text-align: center;
+      }
+      .stat-card .val {
+        font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .stat-card .val.ng   { color: var(--ng); }
+      .stat-card .val.cyan { color: var(--cyan); }
+      .stat-card .val.red  { color: var(--danger); }
+      .stat-card .val.prp  { color: var(--purple); }
+      .stat-card .lbl { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+      /* ── Improvement ── */
+      .improve-bar { height: 6px; border-radius: 999px; background: #1e2a2e; overflow: hidden; margin-top: 6px; }
+      .improve-fill {
+        height: 100%; border-radius: 999px;
+        background: linear-gradient(90deg, var(--ng), var(--cyan));
+        transition: width .6s ease; width: 0%;
+      }
+      /* ── Graphs ── */
+      .graphs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+      .graph-card { margin-bottom: 0; }
+      .graph-card img { width: 100%; height: auto; border-radius: 12px; }
+      @media (max-width: 700px) { .graphs-grid { grid-template-columns: 1fr; } }
+      /* ── Tables ── */
+      .table-wrap { overflow-x: auto; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td {
+        border: 1px solid rgba(0, 255, 198, 0.14);
+        padding: 9px 11px; font-size: 12.5px; vertical-align: middle;
+      }
+      th {
+        background: rgba(0, 255, 198, 0.07);
+        color: rgba(248, 250, 252, 0.7);
+        text-transform: uppercase; letter-spacing: .06em; font-size: 10px; font-weight: 700;
+      }
+      td { color: var(--text); }
+      tr:hover { background: rgba(0,255,198,.03); }
+      .risk-low    { color: var(--success);  font-weight: 700; }
+      .risk-medium { color: var(--warning);  font-weight: 700; }
+      .risk-high   { color: var(--danger);   font-weight: 700; }
+      .action-btn  {
+        color: var(--ng); text-decoration: none; font-size: 12px; font-weight: 600;
+        padding: 3px 9px; border-radius: 6px; border: 1px solid rgba(0,255,198,.2);
+        margin-right: 4px; transition: .1s ease; display: inline-block;
+      }
+      .action-btn:hover { background: rgba(0,255,198,.08); border-color: rgba(0,255,198,.5); }
+      @media (max-width: 600px) {
+        body { padding: 14px 10px; }
+        .stats-row { grid-template-columns: repeat(2, 1fr); }
+        .graph-card img { max-width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-bar">
+      <div class="brand">
+        <div class="mark"><i class="fa-solid fa-shield-virus"></i></div>
+        <strong>COVID-19 <em>Prediction System</em></strong>
+      </div>
+      <div class="nav-links">
+        <a href="/"><i class="fa-solid fa-house-medical" style="margin-right:5px;color:var(--cyan);"></i>Home</a>
+        <a href="/"><i class="fa-solid fa-microscope" style="margin-right:5px;color:var(--purple);"></i>New Test</a>
+        <a href="/logout"><i class="fa-solid fa-right-from-bracket" style="margin-right:5px;color:var(--danger);"></i>Logout</a>
+      </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="card">
+      <div class="profile">
+        <div class="avatar">{{ user.full_name[0] if user.full_name else user.username[0] | upper }}</div>
+        <div class="meta">
+          <div class="name">{{ user.full_name or user.username }}</div>
+          <div class="sub">
+            Username: {{ user.username }} &middot;
+            {% if user.email %}Email: {{ user.email }}&middot;{% endif %}
+            Age: {{ user.age | default('N/A') }} &middot; Gender: {{ user.gender | default('N/A') }}
+          </div>
+        </div>
+        <div class="pills">
+          {% if records and records|length %}
+          {% set latest_record = records[0] %}
+          {% set lbl = latest_record.risk_label | lower %}
+          {% if 'high' in lbl %}
+          <span class="pill high"><i class="fa-solid fa-circle-exclamation" style="margin-right:5px;"></i>Last: {{ latest_record.risk_label }}</span>
+          {% elif 'medium' in lbl %}
+          <span class="pill medium"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;"></i>Last: {{ latest_record.risk_label }}</span>
+          {% else %}
+          <span class="pill low"><i class="fa-solid fa-circle-check" style="margin-right:5px;"></i>Last: {{ latest_record.risk_label }}</span>
+          {% endif %}
+          {% else %}
+          <span class="pill medium"><i class="fa-solid fa-circle-info" style="margin-right:5px;"></i>No predictions yet</span>
+          {% endif %}
+          <span class="pill" style="background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.3);color:#c4b5fd;">
+            <i class="fa-solid fa-clock-rotate-left" style="margin-right:5px;"></i>{{ records|length }} total
+          </span>
+        </div>
+      </div>
+
+      <!-- Improvement / Status -->
+      {% if records and records|length >= 2 %}
+      {% set imp_val = improvement %}
+      {% if imp_val > 0 %}
+      <div style="margin-top:16px;padding:12px 16px;border-radius:12px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.18);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="color:var(--success);font-weight:700;font-size:13px;">
+            <i class="fa-solid fa-arrow-trend-up" style="margin-right:5px;"></i>Health Improved
+          </span>
+          <span style="color:var(--success);font-weight:800;font-size:16px;">{{ imp_val }}% better than last test</span>
+        </div>
+        <div class="improve-bar"><div class="improve-fill" style="width:{{ imp_val * 4 }}%;"></div></div>
+      </div>
+      {% elif imp_val < 0 %}
+      <div style="margin-top:16px;padding:12px 16px;border-radius:12px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="color:var(--warning);font-weight:700;font-size:13px;">
+            <i class="fa-solid fa-arrow-trend-down" style="margin-right:5px;"></i>Attention Needed
+          </span>
+          <span style="color:var(--warning);font-weight:800;font-size:16px;">{{ imp_val }}% since last test</span>
+        </div>
+        <div class="improve-bar"><div class="improve-fill" style="width:{{ (imp_val | abs) * 4 }}%;background:linear-gradient(90deg,#f59e0b,#ef4444);"></div></div>
+      </div>
+      {% else %}
+      <div style="margin-top:16px;padding:12px 16px;border-radius:12px;background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.18);">
+        <span style="color:var(--cyan);font-weight:700;font-size:13px;">
+          <i class="fa-solid fa-equals" style="margin-right:5px;"></i>No change since last test — keep monitoring
+        </span>
+      </div>
+      {% endif %}
+      {% elif records and records|length == 1 %}
+      <div style="margin-top:16px;padding:12px 16px;border-radius:12px;background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.18);">
+        <span style="color:var(--purple);font-weight:700;font-size:13px;">
+          <i class="fa-solid fa-chart-line" style="margin-right:5px;"></i>Complete another assessment to track improvement over time.
+        </span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="val ng">{{ records|length }}</div>
+        <div class="lbl">Total Assessments</div>
+      </div>
+      {% if records and records|length %}
+      {% set latest2 = records[0] %}
+      <div class="stat-card">
+        <div class="val {% if 'high' in (latest2.risk_label | lower) %}red{% elif 'medium' in (latest2.risk_label | lower) %}prp{% else %}ng{% endif %}">
+          {{ latest2.risk_probability | round(0) | int }}%
+        </div>
+        <div class="lbl">Latest Risk</div>
+      </div>
+      {% set low_count = records | selectattr('risk_label','equalto','Low Risk') | list | length %}
+      <div class="stat-card">
+        <div class="val cyan">{{ low_count }}</div>
+        <div class="lbl">Low Risk Tests</div>
+      </div>
+      {% set hi_count = records | selectattr('risk_label','equalto','High Risk') | list | length %}
+      <div class="stat-card">
+        <div class="val {% if hi_count > 0 %}red{% else %}ng{% endif %}">{{ hi_count }}</div>
+        <div class="lbl">High Risk Tests</div>
+      </div>
+      {% if improvement is not none %}
+      {% set imp_val = improvement %}
+      <div class="stat-card">
+        <div class="val {% if imp_val > 0 %}cyan{% elif imp_val < 0 %}red{% else %}ng{% endif %}">
+          {{ "%.0f" | format(imp_val) }}%
+        </div>
+        <div class="lbl">Improvement</div>
+      </div>
+      {% endif %}
+      {% endif %}
+      <div class="stat-card">
+        <div class="val prp">{{ user.age | default('—') }}</div>
+        <div class="lbl">Age</div>
+      </div>
+    </div>
+
+    <!-- Matplotlib Graphs -->
+    {% if graphs %}
+    <div class="graphs-grid">
+      {% if graphs.risk_trend %}
+      <div class="graph-card card">
+        <div class="card-title"><i class="fa-solid fa-chart-line"></i> Risk Probability Over Time</div>
+        <img src="data:image/png;base64,{{ graphs.risk_trend }}" alt="Risk Probability Trend" />
+      </div>
+      {% endif %}
+      {% if graphs.temperature %}
+      <div class="graph-card card">
+        <div class="card-title"><i class="fa-solid fa-temperature-half"></i> Body Temperature Trend</div>
+        <img src="data:image/png;base64,{{ graphs.temperature }}" alt="Temperature Trend" />
+      </div>
+      {% endif %}
+      {% if graphs.symptoms %}
+      <div class="graph-card card">
+        <div class="card-title"><i class="fa-solid fa-stethoscope"></i> Symptom Occurrence History</div>
+        <img src="data:image/png;base64,{{ graphs.symptoms }}" alt="Symptom History" />
+      </div>
+      {% endif %}
+      {% if graphs.medical_history %}
+      <div class="graph-card card">
+        <div class="card-title"><i class="fa-solid fa-notes-medical"></i> Medical History Report</div>
+        <img src="data:image/png;base64,{{ graphs.medical_history }}" alt="Medical History" />
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Prediction History Table -->
+    <div class="card">
+      <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Full Prediction History</div>
+      {% if records and records|length %}
+      <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date &amp; Time</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Fever</th>
+            <th>Cough</th>
+            <th>Breathing</th>
+            <th>Chest Pain</th>
+            <th>Temp °F</th>
+            <th>Diabetes</th>
+            <th>Asthma</th>
+            <th>Smoke</th>
+            <th>High BP</th>
+            <th>Heart</th>
+            <th>Risk Level</th>
+            <th>Risk %</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in records %}
+          {% set rl = r.risk_label | lower %}
+          <tr>
+            <td>#{{ r.id }}</td>
+            <td style="color:var(--muted);font-size:11px;">{{ r.created_at }}</td>
+            <td>{{ r.name or '—' }}</td>
+            <td>{{ r.age }}</td>
+            <td>{{ r.gender }}</td>
+            <td>{{ r.fever }}</td>
+            <td>{{ r.cough }}</td>
+            <td>{{ r.breathing_difficulty }}</td>
+            <td>{{ r.chest_pain }}</td>
+            <td style="font-weight:700;color:{% if (r.temperature_f or 98) >= 102 %}#ef4444{% elif (r.temperature_f or 98) >= 100.4 %}#f59e0b{% else %}#10b981{% endif %};">{{ "%.1f" | format(r.temperature_f or 98.6) }}</td>
+            <td>{{ r.diabetes }}</td>
+            <td>{{ r.asthma }}</td>
+            <td>{{ r.smoke }}</td>
+            <td>{{ r.high_blood_pressure }}</td>
+            <td>{{ r.heart_disease }}</td>
+            <td class="risk-{{ 'high' if 'high' in rl else 'medium' if 'medium' in rl else 'low' }}">{{ r.risk_label }}</td>
+            <td style="font-weight:700;">{{ "%.1f" | format(r.risk_probability) }}%</td>
+            <td>
+              <a class="action-btn" href="/report/{{ r.id }}"><i class="fa-solid fa-file-lines"></i>Report</a>
+              <a class="action-btn" href="/download/{{ r.id }}"><i class="fa-solid fa-download"></i>CSV</a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:40px 20px;color:var(--muted);">
+        <i class="fa-solid fa-folder-open" style="font-size:36px;margin-bottom:12px;display:block;opacity:.35;"></i>
+        <h3 style="font-family:'Sora',sans-serif;color:var(--text);margin-bottom:8px;">No Predictions Yet</h3>
+        <p style="font-size:14px;">Complete your first COVID-19 risk assessment from the home page to see your health analytics here.</p>
+        <a href="/"
+           style="display:inline-block;margin-top:18px;padding:12px 22px;border-radius:12px;
+                  background:linear-gradient(135deg,var(--ng),var(--cyan));color:#000;font-weight:700;
+                  text-decoration:none;font-size:14px;">
+          <i class="fa-solid fa-microscope" style="margin-right:6px;"></i>Run First Analysis
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Footer note -->
+    <div style="text-align:center;color:var(--muted);font-size:11px;margin-top:8px;padding:0 12px;">
+      COVID-19 Prediction System Dashboard &middot; All graphs generated from your personal prediction history &middot; Data is 100% private to your account
+    </div>
+  </body>
+</html>

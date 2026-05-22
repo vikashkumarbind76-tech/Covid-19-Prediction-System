@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% if login_mode %}Admin Login — COVID-19 Prediction System{% else %}Admin Dashboard — COVID-19 Prediction System{% endif %}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050505;
+      --bg2: #0B0F10;
+      --card: rgba(11, 15, 16, 0.8);
+      --card-border: rgba(0, 255, 198, 0.18);
+      --text: #F8FAFC;
+      --muted: #94a3b8;
+      --neon-green: #00FFC6;
+      --neon-green-glow: rgba(0, 255, 198, 0.5);
+      --purple: #7C3AED;
+      --purple-glow: rgba(124, 58, 237, 0.45);
+      --cyan: #06B6D4;
+      --cyan-glow: rgba(6, 182, 212, 0.35);
+      --pink: #EC4899;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --shadow: 0 32px 80px rgba(0, 0, 0, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+      mix-blend-mode: overlay;
+    }
+
+    .backglow {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(80px);
+      opacity: 0.35;
+      animation: floaty 18s ease-in-out infinite;
+    }
+
+    .blob.one {
+      width: 600px;
+      height: 600px;
+      left: -200px;
+      top: -200px;
+      background: radial-gradient(circle at 30% 30%, rgba(0, 255, 198, 0.4), transparent 60%);
+    }
+
+    .blob.two {
+      width: 500px;
+      height: 500px;
+      right: -150px;
+      bottom: -150px;
+      background: radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.3), transparent 60%);
+      animation-duration: 22s;
+      animation-direction: reverse;
+    }
+
+    @keyframes floaty {
+      0% {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      50% {
+        transform: translate3d(30px, 20px, 0) scale(1.05);
+      }
+
+      100% {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    a {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    /* ── LOGIN PAGE ── */
+    .login-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(11, 15, 16, 0.9);
+      border: 1px solid rgba(0, 255, 198, 0.25);
+      border-radius: var(--radius-xl);
+      padding: 36px;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 255, 198, 0.1);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-green), var(--cyan), transparent);
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .login-logo .mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(0, 255, 198, 0.3), rgba(6, 182, 212, 0.2));
+      border: 1px solid rgba(0, 255, 198, 0.4);
+      box-shadow: 0 0 20px rgba(0, 255, 198, 0.25);
+    }
+
+    .login-logo .mark i {
+      font-size: 20px;
+      color: var(--cyan);
+    }
+
+    .login-logo .brand-text strong {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      display: block;
+    }
+
+    .login-logo .brand-text strong em {
+      font-style: normal;
+      color: var(--cyan);
+    }
+
+    .login-logo .brand-text span {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .login-box h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .login-box .sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .login-box label {
+      display: block;
+      color: rgba(248, 250, 252, 0.8);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 7px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 255, 198, 0.2);
+      background: rgba(7, 17, 31, 0.6);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      outline: none;
+      transition: 0.25s ease;
+    }
+
+    .login-box input:focus {
+      border-color: rgba(0, 255, 198, 0.6);
+      box-shadow: 0 0 0 4px rgba(0, 255, 198, 0.12);
+      background: rgba(11, 15, 16, 0.8);
+    }
+
+    .login-box input::placeholder {
+      color: rgba(148, 163, 184, 0.4);
+    }
+
+    .login-field {
+      margin-bottom: 20px;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px 20px;
+      border: 0;
+      border-radius: 14px;
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--neon-green), var(--cyan));
+      color: #fff;
+      box-shadow: 0 0 30px rgba(0, 255, 198, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+      transition: 0.25s ease;
+      margin-top: 4px;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 40px rgba(0, 255, 198, 0.5), 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .login-links {
+      margin-top: 16px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .btn-outline {
+      display: block;
+      width: 100%;
+      padding: 11px 16px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid rgba(0, 255, 198, 0.25);
+      background: rgba(0, 255, 198, 0.06);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+
+    .btn-outline:hover {
+      border-color: rgba(0, 255, 198, 0.5);
+      background: rgba(0, 255, 198, 0.12);
+    }
+
+    .error-box {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-left: 4px solid #ef4444;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      color: rgba(252, 165, 165, 0.95);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── ADMIN DASHBOARD ── */
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: rgba(11, 15, 16, 0.9);
+      border-right: 1px solid rgba(0, 255, 198, 0.12);
+      backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      padding: 20px 18px;
+      border-bottom: 1px solid rgba(0, 255, 198, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-logo .mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(0, 255, 198, 0.3), rgba(6, 182, 212, 0.2));
+      border: 1px solid rgba(0, 255, 198, 0.35);
+    }
+
+    .sidebar-logo .mark i {
+      font-size: 16px;
+      color: var(--cyan);
+    }
+
+    .sidebar-logo .brand strong {
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      display: block;
+    }
+
+    .sidebar-logo .brand strong em {
+      font-style: normal;
+      color: var(--cyan);
+    }
+
+    .sidebar-logo .brand span {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-nav {
+      padding: 12px 10px;
+      flex: 1;
+    }
+
+    .sidebar-section {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(148, 163, 184, 0.5);
+      padding: 8px 10px 4px;
+      margin-top: 8px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: rgba(248, 250, 252, 0.65);
+      font-size: 13px;
+      font-weight: 500;
+      transition: 0.2s ease;
+      margin-bottom: 2px;
+      text-decoration: none;
+    }
+
+    .sidebar-link i {
+      width: 16px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .sidebar-link:hover {
+      background: rgba(0, 255, 198, 0.1);
+      color: var(--text);
+    }
+
+    .sidebar-link.active {
+      background: rgba(0, 255, 198, 0.15);
+      color: var(--text);
+      border: 1px solid rgba(0, 255, 198, 0.2);
+    }
+
+    .sidebar-link.active i {
+      color: var(--cyan);
+    }
+
+    .sidebar-link.danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+    }
+
+    .sidebar-link.danger:hover i {
+      color: #f87171;
+    }
+
+    .sidebar-footer {
+      padding: 14px 10px;
+      border-top: 1px solid rgba(0, 255, 198, 0.1);
+    }
+
+    /* Main content */
+    .admin-main {
+      flex: 1;
+      overflow-x: hidden;
+      padding: 24px;
+    }
+
+    .admin-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(0, 255, 198, 0.1);
+    }
+
+    .admin-topbar h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .admin-topbar .sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 999px;
+      border: 0;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--neon-green), var(--cyan));
+      color: #fff;
+      box-shadow: 0 0 20px rgba(0, 255, 198, 0.3);
+      transition: 0.25s ease;
+      text-decoration: none;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 255, 198, 0.45);
+    }
+
+    .btn-action.secondary {
+      background: rgba(0, 255, 198, 0.1);
+      border: 1px solid rgba(0, 255, 198, 0.25);
+      box-shadow: none;
+      color: var(--text);
+    }
+
+    .btn-action.secondary:hover {
+      background: rgba(0, 255, 198, 0.18);
+      box-shadow: 0 0 16px rgba(0, 255, 198, 0.15);
+    }
+
+    .btn-action.danger-action {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      box-shadow: none;
+      color: #f87171;
+    }
+
+    .btn-action.danger-action:hover {
+      background: rgba(239, 68, 68, 0.18);
+    }
+
+    /* ── KPI cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      background: rgba(11, 15, 16, 0.8);
+      border: 1px solid rgba(0, 255, 198, 0.12);
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+      transition: 0.25s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0, 255, 198, 0.3);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+    }
+
+    .kpi-card.k1::before {
+      background: linear-gradient(90deg, var(--neon-green), var(--cyan));
+    }
+
+    .kpi-card.k2::before {
+      background: linear-gradient(90deg, var(--cyan), #67e8f9);
+    }
+
+    .kpi-card.k3::before {
+      background: linear-gradient(90deg, var(--pink), #f9a8d4);
+    }
+
+    .kpi-card.k4::before {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+
+    .kpi-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    .kpi-card.k1 .kpi-icon {
+      background: rgba(0, 255, 198, 0.15);
+      border: 1px solid rgba(0, 255, 198, 0.25);
+      color: var(--neon-green);
+    }
+
+    .kpi-card.k2 .kpi-icon {
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      color: var(--cyan);
+    }
+
+    .kpi-card.k3 .kpi-icon {
+      background: rgba(236, 72, 153, 0.12);
+      border: 1px solid rgba(236, 72, 153, 0.25);
+      color: var(--pink);
+    }
+
+    .kpi-card.k4 .kpi-icon {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #10b981;
+    }
+
+    .kpi-val {
+      font-family: 'Sora', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .kpi-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 5px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Table ── */
+    .table-section {
+      border-radius: var(--radius-xl);
+      background: rgba(11, 15, 16, 0.8);
+      border: 1px solid rgba(0, 255, 198, 0.12);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(0, 255, 198, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-header h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .table-header .sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      border-collapse: collapse;
+      min-width: 1400px;
+      width: 100%;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+      border-bottom: 1px solid rgba(0, 255, 198, 0.06);
+    }
+
+    th {
+      background: rgba(0, 255, 198, 0.08);
+      color: rgba(248, 250, 252, 0.6);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    td {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    tr:hover td {
+      background: rgba(0, 255, 198, 0.04);
+      color: var(--text);
+    }
+
+    .risk-badge-sm {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .risk-badge-sm.high {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .risk-badge-sm.medium {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .risk-badge-sm.low {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+
+    .risk-badge-sm .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .risk-badge-sm.high .dot {
+      background: #ef4444;
+    }
+
+    .risk-badge-sm.medium .dot {
+      background: #f59e0b;
+    }
+
+    .risk-badge-sm.low .dot {
+      background: #10b981;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tbl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid rgba(0, 255, 198, 0.2);
+      background: rgba(0, 255, 198, 0.08);
+      color: var(--text);
+      text-decoration: none;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .tbl-btn:hover {
+      background: rgba(0, 255, 198, 0.18);
+      border-color: rgba(0, 255, 198, 0.4);
+    }
+
+    .tbl-btn.word {
+      border-color: rgba(6, 182, 212, 0.2);
+      background: rgba(6, 182, 212, 0.06);
+    }
+
+    .tbl-btn.word:hover {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(6, 182, 212, 0.4);
+    }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .empty-state .e-icon {
+      font-size: 48px;
+      color: rgba(0, 255, 198, 0.25);
+      margin-bottom: 14px;
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .empty-state p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .scroll-progress {
+      position: fixed;
+      inset: 0 auto auto 0;
+      width: 0%;
+      height: 3px;
+      z-index: 50;
+      background: linear-gradient(90deg, var(--neon-green), var(--cyan), var(--purple), var(--pink));
+      box-shadow: 0 0 18px rgba(0, 255, 198, 0.55);
+    }
+
+    .cursor-glow {
+      position: fixed;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 255, 198, 0.11), transparent 68%);
+      pointer-events: none;
+      z-index: 0;
+      transform: translate(-50%, -50%);
+      transition: left .14s ease, top .14s ease;
+    }
+
+    .particle-field {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: rgba(0, 255, 198, .72);
+      box-shadow: 0 0 14px rgba(0, 255, 198, .7);
+      animation: particleFloat var(--dur, 16s) linear infinite;
+      opacity: .25;
+    }
+
+    @keyframes particleFloat {
+      0% {
+        transform: translate3d(0, 105vh, 0);
+        opacity: 0;
+      }
+
+      15%,
+      78% {
+        opacity: var(--alpha, .45);
+      }
+
+      100% {
+        transform: translate3d(var(--drift, 50px), -12vh, 0);
+        opacity: 0;
+      }
+    }
+
+    .login-box,
+    .sidebar,
+    .kpi-card,
+    .table-section {
+      isolation: isolate;
+      background: linear-gradient(145deg, rgba(11, 15, 16, .88), rgba(5, 5, 5, .74));
+      box-shadow: 0 28px 80px rgba(0, 0, 0, .52), inset 0 1px 0 rgba(255, 255, 255, .06);
+    }
+
+    .login-box::after,
+    .kpi-card::after,
+    .table-section::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      pointer-events: none;
+      background: linear-gradient(135deg, rgba(0, 255, 198, .45), rgba(6, 182, 212, .14), rgba(124, 58, 237, .38));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: .7;
+    }
+
+    .table-section {
+      position: relative;
+    }
+
+    .admin-main {
+      background:
+        linear-gradient(90deg, rgba(0, 255, 198, .03) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(124, 58, 237, .025) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+
+    .admin-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      margin: -24px -24px 24px;
+      padding: 24px;
+      background: rgba(5, 5, 5, .74);
+      backdrop-filter: blur(22px);
+    }
+
+    .table-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .table-search {
+      width: min(280px, 100%);
+      padding: 10px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 255, 198, .22);
+      background: rgba(5, 5, 5, .55);
+      color: var(--text);
+      outline: 0;
+      font: 600 13px 'Space Grotesk', sans-serif;
+    }
+
+    .table-search:focus {
+      border-color: rgba(0, 255, 198, .58);
+      box-shadow: 0 0 0 4px rgba(0, 255, 198, .1);
+    }
+
+    tbody tr {
+      animation: rowReveal .42s ease both;
+    }
+
+    @keyframes rowReveal {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .mobile-admin-bar {
+      display: none;
+    }
+
+    /* ── Responsive ── */
+    @media(max-width:900px) {
+      .sidebar {
+        display: none;
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .admin-main {
+        padding: 16px;
+      }
+
+      .admin-topbar {
+        margin: -16px -16px 18px;
+        padding: 16px;
+      }
+
+      .mobile-admin-bar {
+        display: flex;
+        position: sticky;
+        bottom: 12px;
+        z-index: 20;
+        gap: 8px;
+        justify-content: center;
+        padding: 10px;
+        margin-top: 18px;
+        border: 1px solid rgba(0, 255, 198, .18);
+        border-radius: 16px;
+        background: rgba(11, 15, 16, .82);
+        backdrop-filter: blur(18px);
+      }
+
+      .mobile-admin-bar a {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        color: var(--text);
+        background: rgba(0, 255, 198, .08);
+        border: 1px solid rgba(0, 255, 198, .16);
+      }
+    }
+
+    @media(max-width:560px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-actions {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="particle-field" id="particleField" aria-hidden="true"></div>
+  <div class="backglow" aria-hidden="true">
+    <div class="blob one"></div>
+    <div class="blob two"></div>
+  </div>
+
+  {% if login_mode %}
+  <!-- ══ LOGIN ══ -->
+  <div class="login-page">
+    <div class="login-box">
+      <div class="login-logo">
+        <div class="mark"><i class="fa-solid fa-shield-virus"></i></div>
+        <div class="brand-text">
+          <strong>COVID-19</strong>
+          <span>Prediction System</span>
+        </div>
+      </div>
+      <h1>Admin Access</h1>
+      <p class="sub">Enter your admin credentials to access the prediction records dashboard.</p>
+
+      <div class="error-box" id="errorBox" style="display:none;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="errorText"></span>
+      </div>
+
+      <form method="post" action="/admin_login.html">
+        <div class="login-field">
+          <label for="password"><i class="fa-solid fa-lock" style="margin-right:5px;color:var(--neon-green);"></i>Admin
+            Password</label>
+          <input id="password" name="password" type="password" placeholder="Enter admin password" required autofocus />
+        </div>
+        <button class="btn-login" type="submit">
+          <i class="fa-solid fa-right-to-bracket" style="margin-right:8px;"></i>Access Dashboard
+        </button>
+      </form>
+
+      <div class="login-links">
+        <a class="btn-outline" href="index.html">
+          <i class="fa-solid fa-house-medical" style="margin-right:8px;color:var(--cyan);"></i>Return to Patient Form
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- ══ ADMIN DASHBOARD ══ -->
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="mark"><i class="fa-solid fa-shield-virus"></i></div>
+        <div class="brand">
+          <strong>COVID-19</strong>
+          <span>Admin Panel</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">Main</div>
+        <a class="sidebar-link active" href="/admin"><i class="fa-solid fa-chart-pie"></i>Overview</a>
+        <a class="sidebar-link" href="/admin"><i class="fa-solid fa-list-check"></i>Predictions</a>
+        <div class="sidebar-section">Data</div>
+        <a class="sidebar-link" href="/admin/download"><i class="fa-solid fa-download"></i>Export CSV</a>
+        <a class="sidebar-link" href="/"><i class="fa-solid fa-house-medical"></i>Patient Form</a>
+        <div class="sidebar-section">Account</div>
+        <a class="sidebar-link danger" href="/admin/logout"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div style="font-size:11px;color:var(--muted);font-weight:500;padding:0 4px;">
+          <i class="fa-solid fa-circle" style="color:#10b981;font-size:8px;margin-right:5px;"></i>System Online
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <h1><i class="fa-solid fa-chart-pie" style="color:var(--neon-green);margin-right:10px;"></i>Predictions
+            Dashboard</h1>
+          <div class="sub">All saved COVID-19 risk assessment records</div>
+        </div>
+        <div class="topbar-actions">
+          <a class="btn-action secondary" href="/"><i class="fa-solid fa-house-medical"></i>Patient Form</a>
+          <a class="btn-action" href="/admin/download"><i class="fa-solid fa-download"></i>Export CSV</a>
+          <a class="btn-action danger-action" href="/admin/logout"><i
+              class="fa-solid fa-right-from-bracket"></i>Logout</a>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      {% if records %}
+      <div class="kpi-grid">
+        <div class="kpi-card k1">
+          <div class="kpi-icon"><i class="fa-solid fa-database"></i></div>
+          <div class="kpi-val">{{ records|length }}</div>
+          <div class="kpi-label">Total Records</div>
+        </div>
+        <div class="kpi-card k2">
+          <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="kpi-val">{{ records|selectattr('risk_label','equalto','High Risk')|list|length }}</div>
+          <div class="kpi-label">High Risk Cases</div>
+        </div>
+        <div class="kpi-card k3">
+          <div class="kpi-icon"><i class="fa-solid fa-circle-half-stroke"></i></div>
+          <div class="kpi-val">{{ records|selectattr('risk_label','equalto','Medium Risk')|list|length }}</div>
+          <div class="kpi-label">Medium Risk Cases</div>
+        </div>
+        <div class="kpi-card k4">
+          <div class="kpi-icon"><i class="fa-solid fa-shield-check"></i></div>
+          <div class="kpi-val">{{ records|selectattr('risk_label','equalto','Low Risk')|list|length }}</div>
+          <div class="kpi-label">Low Risk Cases</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Table -->
+      <div class="table-section">
+        <div class="table-header">
+          <div>
+            <h2>Patient Records</h2>
+            <div class="sub">Complete prediction history with all clinical data</div>
+          </div>
+          {% if records %}
+          <div class="table-tools">
+            <input class="table-search" id="recordSearch" type="search" placeholder="Search patient records" />
+            <a class="btn-action secondary" href="/admin/download"><i class="fa-solid fa-file-export"></i>Export</a>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if records %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr class="record-row">
+                <th>ID</th>
+                <th>Date / Time</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Risk Level</th>
+                <th>Probability</th>
+                <th>Fever</th>
+                <th>Cough</th>
+                <th>Sore Throat</th>
+                <th>Fatigue</th>
+                <th>Breathing</th>
+                <th>Chest Pain</th>
+                <th>Smell/Taste</th>
+                <th>Diabetes</th>
+                <th>Asthma</th>
+                <th>Smoking</th>
+                <th>High BP</th>
+                <th>Heart</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in records %}
+              <tr>
+                <td style="color:var(--neon-green);font-weight:700;">#{{ record.id }}</td>
+                <td>{{ record.created_at }}</td>
+                <td style="color:var(--text);font-weight:600;">{{ record.name }}</td>
+                <td>{{ record.phone }}</td>
+                <td>{{ record.email }}</td>
+                <td>{{ record.age }}</td>
+                <td>{{ record.gender }}</td>
+                <td>
+                  {% set rk = record.risk_label|lower %}
+                  {% if 'high' in rk %}
+                  <span class="risk-badge-sm high"><span class="dot"></span>{{ record.risk_label }}</span>
+                  {% elif 'medium' in rk %}
+                  <span class="risk-badge-sm medium"><span class="dot"></span>{{ record.risk_label }}</span>
+                  {% else %}
+                  <span class="risk-badge-sm low"><span class="dot"></span>{{ record.risk_label }}</span>
+                  {% endif %}
+                </td>
+                <td style="font-weight:700;">{{ record.risk_probability }}%</td>
+                <td>{{ record.fever }}</td>
+                <td>{{ record.cough }}</td>
+                <td>{{ record.cold_sore_throat }}</td>
+                <td>{{ record.weakness }}</td>
+                <td>{{ record.breathing_difficulty }}</td>
+                <td>{{ record.chest_pain }}</td>
+                <td>{{ record.loss_smell_taste }}</td>
+                <td>{{ record.diabetes }}</td>
+                <td>{{ record.asthma }}</td>
+                <td>{{ record.smoke }}</td>
+                <td>{{ record.high_blood_pressure }}</td>
+                <td>{{ record.heart_disease }}</td>
+                <td>
+                  <div class="action-btns">
+                    <a class="tbl-btn" href="/report/{{ record.id }}"><i class="fa-solid fa-file-pdf"></i>Report</a>
+                    <a class="tbl-btn word" href="/download/{{ record.id }}/word"><i
+                        class="fa-solid fa-file-word"></i>Word</a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="e-icon"><i class="fa-solid fa-folder-open"></i></div>
+          <h3>No Records Found</h3>
+          <p>No prediction records have been saved yet. Run an analysis from the patient form to generate records.</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="mobile-admin-bar" aria-label="Admin quick actions">
+        <a href="/" title="Patient Form"><i class="fa-solid fa-house-medical"></i></a>
+        <a href="/admin/download" title="Export CSV"><i class="fa-solid fa-download"></i></a>
+        <a href="/admin/logout" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></a>
+      </div>
+    </main>
+  </div>
+  {% endif %}
+
+  <script>
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const cursorGlow = document.getElementById("cursorGlow");
+    document.addEventListener("mousemove", (event) => {
+      if (!cursorGlow) return;
+      cursorGlow.style.left = event.clientX + "px";
+      cursorGlow.style.top = event.clientY + "px";
+    });
+    const scrollProgress = document.getElementById("scrollProgress");
+    function updateProgress() {
+      if (!scrollProgress) return;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      scrollProgress.style.width = (max > 0 ? clamp((window.scrollY / max) * 100, 0, 100) : 0) + "%";
+    }
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    updateProgress();
+    const particleField = document.getElementById("particleField");
+    if (particleField && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const total = window.innerWidth < 720 ? 24 : 44;
+      for (let i = 0; i < total; i++) {
+        const p = document.createElement("span");
+        p.className = "particle";
+        p.style.left = Math.random() * 100 + "%";
+        p.style.setProperty("--dur", (12 + Math.random() * 14).toFixed(1) + "s");
+        p.style.setProperty("--drift", ((Math.random() - 0.5) * 130).toFixed(0) + "px");
+        p.style.setProperty("--alpha", (0.2 + Math.random() * 0.45).toFixed(2));
+        p.style.animationDelay = (-Math.random() * 18).toFixed(2) + "s";
+        particleField.appendChild(p);
+      }
+    }
+    const recordSearch = document.getElementById("recordSearch");
+    recordSearch?.addEventListener("input", () => {
+      const query = recordSearch.value.trim().toLowerCase();
+      document.querySelectorAll("tbody tr").forEach((row) => {
+        row.style.display = row.textContent.toLowerCase().includes(query) ? "" : "none";
+      });
+    });
+    const error = new URLSearchParams(window.location.search).get("error");
+    if (error) {
+      const box = document.getElementById("errorBox");
+      const txt = document.getElementById("errorText");
+      if (box && txt) { txt.textContent = error; box.style.display = "flex"; }
+    }
+  </script>
+</body>
+
+</html>
